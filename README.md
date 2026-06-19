@@ -1,96 +1,62 @@
-# Policy RAG Assistant: Hybrid-Retrieval Compliance Engine 📖🤖
+# Policy RAG Assistant: Decoupled Streaming Compliance Engine 📖🚀
 
-A production-grade, work-in-progress Retrieval-Augmented Generation (RAG) assistant designed to make dense international development policy frameworks accessible to non-specialist users. This engine pairs **Google Gemini 2.5 Pro** via **Google AI Studio** with a dual-engine **Hybrid Retrieval (BM25 + ChromaDB)** framework to enforce absolute grounding, completely eliminating speculative model hallucinations in high-stakes compliance environments.
-
----
-
-## 🚀 The Core Problem & Solution
-
-**The Problem:** Standalone Large Language Models (LLMs) are highly confident autocomplete engines. When querying detailed development policies, they routinely generate plausible-sounding but completely fabricated clauses (hallucinations), creating massive compliance and safety risks.
-
-**The Solution:** This project transforms the query loop from a "closed-book" memory game into an **"open-book" verified audit trail**. By binding an isolated Gemini model to a hybrid local knowledge base, the tool guarantees that answers are extracted directly from authenticated reference chunks or the system fails safely.
+A production-grade, full-stack Retrieval-Augmented Generation (RAG) tool designed to make dense international development policy frameworks accessible to non-specialist users. This architecture decouples concerns completely by deploying a **FastAPI backend orchestration service** powered by **Google Gemini 2.5 Pro** and a **ChromaDB + BM25 Hybrid Search Mesh**, communicating with a high-performance **TailwindCSS/JS frontend** using Server-Sent Events (SSE) for token-by-token real-time streaming.
 
 ---
 
-## 🛠️ System Architecture & Hybrid Search Pipeline
-
-The tool implements an Advanced RAG paradigm using **Reciprocal Rank Fusion (RRF)** to combine two distinct search methods:
-
-1. **Keyword Search (BM25)**: Targets exact matches, including specific clause numbers, legal acronyms, and direct section strings (e.g., *"Section 4.1.a"*).
-2. **Semantic Search (ChromaDB Vector)**: Evaluates vector dot-products to understand abstract concepts, context, and structural synonyms using Google's `text-embedding-004` model.
+## 🛠️ System Architecture Diagram
 
 ```text
-User Query ──> [ Ingest & Embed Data ]
-                     │
-                     ├──> BM25 Engine (Keyword Match) ──┐
-                     │                                   ├──> [ Reciprocal Rank Fusion ] ──> Grounded Context ──> [ Gemini 2.5 Pro ] ──> Verified Audit Trail
-                     └──> ChromaDB (Semantic Vector) ───┘
+  [ Client UI Interface ] (TailwindCSS / JS)
+            │                  ▲
+    POST File / Query     Server-Sent Events (Token Streaming)
+            ▼                  │
+  [ FastAPI Backend Engine ] ──┼──────────────────────┐
+            │                  │                      │
+            ▼                  │                      ▼
+    BM25 Keyword Index         │             ChromaDB Vector Index
+    (Exact Clause Tracking)    │             (Semantic Meaning Match)
+            │                  │                      │
+            └───────────> [ Reciprocal ] <────────────┘
+                          [ Rank Fusion]
+                               │
+                               ▼
+                        [ Gemini 2.5 Pro ]
 ```
 
-### Key Engineering Features
-* **Fact-Locked System Prompts**: Structural directives force Gemini to return a standard verification failure code rather than guessing if proof is missing.
-* **Deterministic Configuration**: Run parameters fix model `temperature` strictly to `0.0` for factual consistency.
-* **Traceable Citations**: System automatically maps and parses source file metadata directly into the frontend interface.
+### Key Technical Decisions
+* **Decoupled Architecture**: Splitting the frontend client from the engine ensures the heavy compute of document embedding calculations doesn't block UI interactions.
+* **Hybrid Search Formulation**: Intersects traditional lexical frequency rankings (BM25) with dense semantic spaces (`text-embedding-004`) using a 50/50 rank fusion blend to track specific section indices accurately.
+* **Deterministic Grounding**: Pinning the model execution temperature to `0.0` and implementing fact-locked prompts removes creative guessing, forcing the application to report gaps safely.
 
 ---
 
-## 📁 Repository Structure
+## 🚀 Deployment Instructions
 
-```text
-policy-rag-assistant/
-│
-├── documents/              # Staging directory for policy source PDFs
-│
-├── db/                     # Local persistent ChromaDB vector records
-│
-├── requirements.txt        # Python deployment manifests
-├── app.py                  # Live Streamlit Web User Interface Dashboard
-└── pipeline.py             # Dual-engine search architecture & RAG orchestration
-```
-
----
-
-## ⚡ Quick Start & Deployment
-
-### 1. Clone & Set Up Isolated Sandbox Environment
+### 1. Set Up the Asynchronous FastAPI Server Layer
 ```bash
-git clone https://github.com
-cd policy-rag-assistant
+cd backend
 python3 -m venv compliance_env
 source compliance_env/bin/activate
-```
-
-### 2. Install Dependency Framework Matrices
-```bash
 pip install -r requirements.txt
+export GOOGLE_API_KEY="AIzaSyYourActualGoogleStudioKeyHere"
+python main.py
 ```
+*The service will start local operations at `http://127.0.0.1:8000`.*
 
-### 3. Inject Secure Google AI Studio Credentials
+### 2. Spin Up the Frontend UI Framework
+In a separate terminal instance, serve the client code to prevent local security file blocks:
 ```bash
-export GOOGLE_API_KEY="your-google-studio-api-key-here"
+cd frontend
+python3 -m http.server 3000
 ```
-
-### 4. Fire Up the Dashboard Interface
-```bash
-streamlit run app.py
-```
+*Open your web browser and navigate to `http://localhost:3000`.*
 
 ---
 
-## 🔬 Rigorous Testing & Evaluation Methodology
+## 🔬 Evaluation & Reliability Tests
 
-To evaluate the reliability of your local node, run these testing procedures:
-
-1. **Baseline Ingestion Validation**: Drop a standard multi-page UN or World Bank PDF policy into `documents/`. Use the sidebar to compile the index, and ask for specific section data to confirm chunk continuity.
-2. **The Hallucination Trap**: Ask a highly specific question about a country or clause *completely missing* from your files. The engine should output:  
+To evaluate system functionality, run this check:
+1. **The Failsafe Test**: Ask the system about information completely unrelated to your uploaded documents. The application should safely output:  
    `"Factual verification failed: Data missing from references."`  
-   This proves the strict context boundaries are holding successfully in the Gemini framework.
-
----
-
-## 🛠️ Roadmap & Work-in-Progress Focus
-* [x] Core Data Ingestion Pipeline (PyPDF)
-* [x] Hybrid Search Integration (BM25 + Vector RRF via Google Embeddings)
-* [x] Deterministic Gemini 2.5 Pro Grounding & Metadata Citation
-* [ ] Programmatic Evaluation Frameworks (Integrating **Ragas / TruLens** metrics)
-* [ ] Local Deployment Transition (Migrating from cloud API to a fully local, open-source model using Ollama)
+   This confirms that the context guardrails are running correctly.
