@@ -1,6 +1,6 @@
-# Policy RAG Assistant: Hybrid-Retrieval Compliance Engine
+# Policy RAG Assistant: Hybrid-Retrieval Compliance Engine 📖🤖
 
-A production-grade, work-in-progress Retrieval-Augmented Generation (RAG) assistant designed to make dense international development policy frameworks accessible to non-specialist users. This engine pairs **Claude 3.5 Sonnet** with a dual-engine **Hybrid Retrieval (BM25 + ChromaDB)** framework to enforce absolute grounding, completely eliminating speculative model hallucinations in high-stakes compliance environments.
+A production-grade, work-in-progress Retrieval-Augmented Generation (RAG) assistant designed to make dense international development policy frameworks accessible to non-specialist users. This engine pairs **Google Gemini 2.5 Pro** via **Google AI Studio** with a dual-engine **Hybrid Retrieval (BM25 + ChromaDB)** framework to enforce absolute grounding, completely eliminating speculative model hallucinations in high-stakes compliance environments.
 
 ---
 
@@ -8,7 +8,7 @@ A production-grade, work-in-progress Retrieval-Augmented Generation (RAG) assist
 
 **The Problem:** Standalone Large Language Models (LLMs) are highly confident autocomplete engines. When querying detailed development policies, they routinely generate plausible-sounding but completely fabricated clauses (hallucinations), creating massive compliance and safety risks.
 
-**The Solution:** This project transforms the query loop from a "closed-book" memory game into an **"open-book" verified audit trail**. By binding an isolated LLM to a hybrid local knowledge base, the tool guarantees that answers are extracted directly from authenticated reference chunks or the system fails safely.
+**The Solution:** This project transforms the query loop from a "closed-book" memory game into an **"open-book" verified audit trail**. By binding an isolated Gemini model to a hybrid local knowledge base, the tool guarantees that answers are extracted directly from authenticated reference chunks or the system fails safely.
 
 ---
 
@@ -17,18 +17,18 @@ A production-grade, work-in-progress Retrieval-Augmented Generation (RAG) assist
 The tool implements an Advanced RAG paradigm using **Reciprocal Rank Fusion (RRF)** to combine two distinct search methods:
 
 1. **Keyword Search (BM25)**: Targets exact matches, including specific clause numbers, legal acronyms, and direct section strings (e.g., *"Section 4.1.a"*).
-2. **Semantic Search (ChromaDB Vector)**: Evaluates vector dot-products to understand abstract concepts, context, and structural synonyms (e.g., matching *"data privacy"* with *"information safety protocols"*).
+2. **Semantic Search (ChromaDB Vector)**: Evaluates vector dot-products to understand abstract concepts, context, and structural synonyms using Google's `text-embedding-004` model.
 
 ```text
 User Query ──> [ Ingest & Embed Data ]
                      │
                      ├──> BM25 Engine (Keyword Match) ──┐
-                     │                                   ├──> [ Reciprocal Rank Fusion ] ──> Grounded Context ──> [ Claude 3.5 Sonnet ] ──> Verified Audit Trail
+                     │                                   ├──> [ Reciprocal Rank Fusion ] ──> Grounded Context ──> [ Gemini 2.5 Pro ] ──> Verified Audit Trail
                      └──> ChromaDB (Semantic Vector) ───┘
 ```
 
 ### Key Engineering Features
-* **Fact-Locked System Prompts**: Structural directives force Claude to return a standard verification failure code rather than guessing if proof is missing.
+* **Fact-Locked System Prompts**: Structural directives force Gemini to return a standard verification failure code rather than guessing if proof is missing.
 * **Deterministic Configuration**: Run parameters fix model `temperature` strictly to `0.0` for factual consistency.
 * **Traceable Citations**: System automatically maps and parses source file metadata directly into the frontend interface.
 
@@ -65,9 +65,9 @@ source compliance_env/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Inject Secure System Environment API Credentials
+### 3. Inject Secure Google AI Studio Credentials
 ```bash
-export ANTHROPIC_API_KEY="your-anthropic-api-key-here"
+export GOOGLE_API_KEY="your-google-studio-api-key-here"
 ```
 
 ### 4. Fire Up the Dashboard Interface
@@ -84,13 +84,13 @@ To evaluate the reliability of your local node, run these testing procedures:
 1. **Baseline Ingestion Validation**: Drop a standard multi-page UN or World Bank PDF policy into `documents/`. Use the sidebar to compile the index, and ask for specific section data to confirm chunk continuity.
 2. **The Hallucination Trap**: Ask a highly specific question about a country or clause *completely missing* from your files. The engine should output:  
    `"Factual verification failed: Data missing from references."`  
-   This proves the strict context boundaries are holding successfully.
+   This proves the strict context boundaries are holding successfully in the Gemini framework.
 
 ---
 
 ## 🛠️ Roadmap & Work-in-Progress Focus
 * [x] Core Data Ingestion Pipeline (PyPDF)
-* [x] Hybrid Search Integration (BM25 + Vector RRF)
-* [x] Deterministic Claude 3.5 Grounding & Metadata Citation
+* [x] Hybrid Search Integration (BM25 + Vector RRF via Google Embeddings)
+* [x] Deterministic Gemini 2.5 Pro Grounding & Metadata Citation
 * [ ] Programmatic Evaluation Frameworks (Integrating **Ragas / TruLens** metrics)
 * [ ] Local Deployment Transition (Migrating from cloud API to a fully local, open-source model using Ollama)
